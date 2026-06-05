@@ -15,3 +15,5 @@
 /app/release/blockpuzzle.apk
 /app/release/output-metadata.json
 /app/release/app-release.apk
+# Offline compile-check working dir (downloaded jars, generated stubs, class output)
+/.verify

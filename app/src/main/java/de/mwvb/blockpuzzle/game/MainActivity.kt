@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import de.mwvb.blockpuzzle.R
+import de.mwvb.blockpuzzle.databinding.ActivityMainBinding
 import de.mwvb.blockpuzzle.gamepiece.GamePiece
 import de.mwvb.blockpuzzle.gamepiece.GamePieceTouchListener
 import de.mwvb.blockpuzzle.gamepiece.GamePieceView
@@ -24,7 +25,6 @@ import de.mwvb.blockpuzzle.playingfield.IPlayingFieldView
 import de.mwvb.blockpuzzle.playingfield.PlayingFieldView
 import de.mwvb.blockpuzzle.playingfield.QPosition
 import de.mwvb.blockpuzzle.playingfield.gravitation.ShakeService
-import kotlinx.android.synthetic.main.activity_main.*
 
 /**
  * GameActivity
@@ -33,6 +33,7 @@ import kotlinx.android.synthetic.main.activity_main.*
  * without destroying everything.
  */
 class MainActivity : AppCompatActivity(), IGameView {
+    private lateinit var binding: ActivityMainBinding
     private lateinit var gameEngine: GameEngine
     private lateinit var shakeService : ShakeService
     private var messages: MessageFactory? = null
@@ -45,21 +46,22 @@ class MainActivity : AppCompatActivity(), IGameView {
 
         // SUPER PHASE
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         AbstractDAO.init(this)
 
         // REST OF METHOD PHASE
-        (placeholder1 as ViewGroup).addView(GamePieceView(baseContext, 1, false))
-        (placeholder2 as ViewGroup).addView(GamePieceView(baseContext, 2, false))
-        (placeholder3 as ViewGroup).addView(GamePieceView(baseContext, 3, false))
-        (parking      as ViewGroup).addView(GamePieceView(baseContext, -1, true))
+        (binding.placeholder1 as ViewGroup).addView(GamePieceView(baseContext, 1, false))
+        (binding.placeholder2 as ViewGroup).addView(GamePieceView(baseContext, 2, false))
+        (binding.placeholder3 as ViewGroup).addView(GamePieceView(baseContext, 3, false))
+        (binding.parking      as ViewGroup).addView(GamePieceView(baseContext, -1, true))
 
         initTouchListener(1)
         initTouchListener(2)
         initTouchListener(3)
         initTouchListener(-1)
-        playingField.setOnDragListener(createDragListener(false)) // Drop Event für Spielfeld
-        parking.setOnDragListener(createDragListener(true)) // Drop Event fürs Parking
+        binding.playingField.setOnDragListener(createDragListener(false)) // Drop Event für Spielfeld
+        binding.parking.setOnDragListener(createDragListener(true)) // Drop Event fürs Parking
         initNewGameButton() // also Undo button
     }
 
@@ -83,12 +85,12 @@ class MainActivity : AppCompatActivity(), IGameView {
 
         when (gameEngine.topButtonMode) {
             TopButtonMode.UNDO -> {
-                newGame.visibility = View.VISIBLE
-                newGame.setText(R.string.undo)
-                newGame.setBackgroundColor(ContextCompat.getColor(this, R.color.colorGrey))
+                binding.newGame.visibility = View.VISIBLE
+                binding.newGame.setText(R.string.undo)
+                binding.newGame.setBackgroundColor(ContextCompat.getColor(this, R.color.colorGrey))
             }
-            TopButtonMode.NO_BUTTON -> newGame.visibility = View.INVISIBLE
-            else -> newGame.visibility = View.VISIBLE
+            TopButtonMode.NO_BUTTON -> binding.newGame.visibility = View.INVISIBLE
+            else -> binding.newGame.visibility = View.VISIBLE
         }
     }
 
@@ -177,7 +179,7 @@ class MainActivity : AppCompatActivity(), IGameView {
                 Handler().postDelayed({ initGameEngine() }, 1200)
             }
         } catch (e: DoesNotWorkException) {
-            playingField.soundService.doesNotWork()
+            binding.playingField.soundService.doesNotWork()
             Toast.makeText(this, R.string.gehtNicht, Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -198,7 +200,7 @@ class MainActivity : AppCompatActivity(), IGameView {
     }
 
     private fun initNewGameButton() {
-        newGame.setOnClickListener {
+        binding.newGame.setOnClickListener {
             when (gameEngine.topButtonMode) {
                 TopButtonMode.NEW_GAME -> startNewGameDispatch()
                 TopButtonMode.UNDO     -> undo()
@@ -228,7 +230,7 @@ class MainActivity : AppCompatActivity(), IGameView {
         try {
             gameEngine.undo()
         } catch (e: DoesNotWorkException) {
-            playingField.soundService.doesNotWork()
+            binding.playingField.soundService.doesNotWork()
             Toast.makeText(this, R.string.gehtNicht, Toast.LENGTH_SHORT).show()
         }
     }
@@ -238,34 +240,34 @@ class MainActivity : AppCompatActivity(), IGameView {
     }
 
     override fun showScore(text: String) {
-        info.text = text
+        binding.info.text = text
     }
 
     override fun showMoves(text: String) {
-        infoDisplay.text = text
+        binding.infoDisplay.text = text
     }
 
     override fun showPlanetNumber(number: Int) {
-        territoryName.text = resources.getString(R.string.planetNo, number)
-        territoryName.visibility = View.VISIBLE
+        binding.territoryName.text = resources.getString(R.string.planetNo, number)
+        binding.territoryName.visibility = View.VISIBLE
     }
 
     override fun showTerritoryName(resId: Int) {
         val text = resources.getText(resId).trim()
-        territoryName.text = text
-        territoryName.visibility = if (text.isEmpty()) View.GONE else View.VISIBLE // hide label to save space
+        binding.territoryName.text = text
+        binding.territoryName.visibility = if (text.isEmpty()) View.GONE else View.VISIBLE // hide label to save space
     }
 
     override fun getPlayingFieldView(): IPlayingFieldView {
-        return playingField
+        return binding.playingField
     }
 
     override fun getGamePieceView(index: Int): GamePieceView {
         return when (index) {
-            1 -> (placeholder1 as ViewGroup).getChildAt(0) as GamePieceView
-            2 -> (placeholder2 as ViewGroup).getChildAt(0) as GamePieceView
-            3 -> (placeholder3 as ViewGroup).getChildAt(0) as GamePieceView
-            -1 -> (parking     as ViewGroup).getChildAt(0) as GamePieceView
+            1 -> (binding.placeholder1 as ViewGroup).getChildAt(0) as GamePieceView
+            2 -> (binding.placeholder2 as ViewGroup).getChildAt(0) as GamePieceView
+            3 -> (binding.placeholder3 as ViewGroup).getChildAt(0) as GamePieceView
+            -1 -> (binding.parking     as ViewGroup).getChildAt(0) as GamePieceView
             else -> throw RuntimeException()
         }
     }
@@ -275,11 +277,11 @@ class MainActivity : AppCompatActivity(), IGameView {
     }
 
     override fun shake() {
-        playingField.soundService.shake()
+        binding.playingField.soundService.shake()
     }
 
     override fun playSound(number: Int) {
-        playingField.soundService.playSound(number)
+        binding.playingField.soundService.playSound(number)
     }
 
     override fun getMessages(): MessageFactory {

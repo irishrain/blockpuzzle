@@ -1,10 +1,29 @@
 # Development
 Cooperation is welcome!
 
+## Build requirements
+
+The project builds with a modern Android toolchain:
+
+- JDK 17 (required by the Android Gradle Plugin 8.x)
+- Android Gradle Plugin 8.5.2 / Gradle 8.7 (provided by the Gradle wrapper)
+- Kotlin 1.9.24
+- Android SDK with `compileSdk` / `targetSdk` 34 (min SDK 21)
+- Android Studio Koala (2024.1.1) or newer
+
+Build from the command line:
+
+```
+./gradlew assembleDebug      # build the debug APK
+./gradlew test               # run the JVM unit tests
+```
+
+The APK is written to `app/build/outputs/apk/debug/`.
+
 ## How to contribute
 
 1. Logon to Github and Fork this repository
-2. start Android Studio (4.0.1)
+2. start Android Studio (Koala 2024.1.1 or newer)
 3. File > New > Project from version control
 4. select "Github" on left side
 5. paste URL of your Github repository, optional select folder

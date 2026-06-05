@@ -10,11 +10,6 @@ public class GlobalData {
     // Trophies
     private int platinumTrophies = 0;
     private String lastTrophyDate = null;
-    // Death star game
-    /** 1=Death star game active */
-    private int todesstern = 0;
-    /** ich glaube 0 bis 2 */
-    private int todessternReaktor = 0;
 
     public GameType getGameType() {
         return gameType;
@@ -78,22 +73,6 @@ public class GlobalData {
 
     public void setLastTrophyDate(String lastTrophyDate) {
         this.lastTrophyDate = lastTrophyDate;
-    }
-
-    public int getTodesstern() {
-        return todesstern;
-    }
-
-    public void setTodesstern(int todesstern) {
-        this.todesstern = todesstern;
-    }
-
-    public int getTodessternReaktor() {
-        return todessternReaktor;
-    }
-
-    public void setTodessternReaktor(int todessternReaktor) {
-        this.todessternReaktor = todessternReaktor;
     }
 
     public static GlobalData get() {

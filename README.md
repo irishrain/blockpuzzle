@@ -1,5 +1,5 @@
-# Block Puzzle Stone Wars
-Block Puzzle Stone Wars is an Android game.
+# Block Puzzle
+Block Puzzle is an Android game.
 
 See [Game description](https://github.com/SoltauFintel/blockpuzzle/blob/master/fastlane/metadata/android/en-US/full_description.txt)
 

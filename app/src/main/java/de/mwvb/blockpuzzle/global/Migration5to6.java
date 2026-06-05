@@ -5,16 +5,9 @@ import android.content.SharedPreferences;
 
 import org.jetbrains.annotations.NotNull;
 
-import de.mwvb.blockpuzzle.cluster.Cluster1;
 import de.mwvb.blockpuzzle.gamestate.GamePlayState;
 import de.mwvb.blockpuzzle.gamestate.Spielstand;
 import de.mwvb.blockpuzzle.gamestate.SpielstandDAO;
-import de.mwvb.blockpuzzle.gamestate.Trophies;
-import de.mwvb.blockpuzzle.gamestate.TrophiesDAO;
-import de.mwvb.blockpuzzle.planet.IPlanet;
-import de.mwvb.blockpuzzle.planet.ISpaceObject;
-import de.mwvb.blockpuzzle.planet.SpaceObjectState;
-import de.mwvb.blockpuzzle.planet.SpaceObjectStateDAO;
 
 /**
  * Data migration from V5 to V6. From SharedPrefs to JSON files. From IPersistence to AbstractDAO. From API controlled to object oriented.
@@ -26,17 +19,8 @@ public class Migration5to6 {
     private static final String GLOBAL_PLAYERNAME_ENTERED = "/playernameEntered";
     private static final String GLOBAL_GAME_SOUNDS = "/gameSounds";
     private static final String GLOBAL_CURRENT_PLANET = "/currentPlanet";
-    private static final String GLOBAL_BRONZE_TROPHY = "/trophyBronze_C";   // cluster wide
-    private static final String GLOBAL_SILVER_TROPHY = "/trophySilver_C";   // cluster wide
-    private static final String GLOBAL_GOLDEN_TROPHY = "/trophyGolden_C";   // cluster wide
     private static final String GLOBAL_PLATINUM_TROPHY = "/trophyPlatinum"; // galaxy wide
     private static final String GLOBAL_LAST_TROPHY_DATE = "/trophyLastDate";// galaxy wide
-    private static final String GLOBAL_DEATH_STAR = "/todesstern";
-    private static final String GLOBAL_DEATH_STAR_REACTOR = "/reaktor";
-    // Planet specific data ----
-    private static final String PLANET_VERSION = "version";
-    private static final String PLANET_VISIBLE = "visible";
-    private static final String PLANET_OWNER = "owner";
     // Game specific data ----
     private static final String SCORE = "score";
     private static final String DELTA = "delta";
@@ -59,8 +43,6 @@ public class Migration5to6 {
     private SharedPreferences pref;
     private String prefix = "";
     private final GlobalDataDAO globalDataDAO = new GlobalDataDAO();
-    private final TrophiesDAO trophiesDAO = new TrophiesDAO();
-    private final SpaceObjectStateDAO planetDAO = new SpaceObjectStateDAO();
     private final SpielstandDAO spielstandDAO = new SpielstandDAO();
 
     public boolean isNecessary() {
@@ -82,37 +64,12 @@ public class Migration5to6 {
         g.setGameType(getGameType());
         g.setPlatinumTrophies(getInt(GLOBAL_PLATINUM_TROPHY));
         g.setLastTrophyDate(getString(GLOBAL_LAST_TROPHY_DATE));
-        g.setTodesstern(getInt(GLOBAL_DEATH_STAR));
-        g.setTodessternReaktor(getInt(GLOBAL_DEATH_STAR_REACTOR));
         globalDataDAO.save(g);
-
-        Trophies t = new Trophies();
-        int cn = Cluster1.INSTANCE.getNumber();
-        t.setBronze(getInt(GLOBAL_BRONZE_TROPHY + cn));
-        t.setSilver(getInt(GLOBAL_SILVER_TROPHY + cn));
-        t.setGolden(getInt(GLOBAL_GOLDEN_TROPHY + cn));
-        trophiesDAO.save(cn, t);
 
         Spielstand ss0 = new Spielstand();
         prefix = "";
         mapSpielstand(ss0);
         spielstandDAO.saveOldGame(ss0);
-
-        for (ISpaceObject so : Cluster1.INSTANCE.getSpaceObjects()) {
-            if (so instanceof IPlanet) {
-                IPlanet p = (IPlanet) so;
-                mapPlanetState(p);
-                if (p.getGameDefinitions() != null) {
-                    for (int i = 0; i < p.getGameDefinitions().size(); i++) {
-                        Spielstand ss = new Spielstand();
-                        prefix = "C" + p.getClusterNumber() + "_" + p.getNumber() + "_" + i;
-                        mapSpielstand(ss);
-                        spielstandDAO.save(p, i, ss);
-                        prefix = "";
-                    }
-                }
-            }
-        }
 
         pref = null;
         System.out.println("--------- Migration erfolgreich ---------------");
@@ -122,27 +79,11 @@ public class Migration5to6 {
     private GameType getGameType() {
         switch (getInt(GLOBAL_OLD_GAME)) {
             case 1:
+            case 2: // former Stone Wars save -> continue with the classic game
                 return GameType.OLD_GAME;
-            case 2:
-                return GameType.STONE_WARS;
             default: // 0
                 return GameType.NOT_SELECTED;
         }
-    }
-
-    private void mapPlanetState(IPlanet p) {
-        SpaceObjectState ps = new SpaceObjectState();
-        prefix = p.getClusterNumber() + "_" + p.getNumber() + "_";
-        if (getInt(PLANET_VERSION) == 1) {
-            ps.setVisibleOnMap(getBoolean(PLANET_VISIBLE));
-            ps.setOwner(getBoolean(PLANET_OWNER));
-        } else { // no planet data
-            ps.setVisibleOnMap(p.getNumber() == 1); // only planet 1 must be visible
-            ps.setOwner(false);
-        }
-        ps.setVersion(1);
-        prefix = "";
-        planetDAO.save(p, ps);
     }
 
     private void mapSpielstand(Spielstand ss) {

@@ -1,7 +1,6 @@
 package de.mwvb.blockpuzzle.game
 
 import android.content.ClipDescription
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -19,9 +18,6 @@ import de.mwvb.blockpuzzle.gamepiece.GamePieceTouchListener
 import de.mwvb.blockpuzzle.gamepiece.GamePieceView
 import de.mwvb.blockpuzzle.gamestate.SpielstandDAO
 import de.mwvb.blockpuzzle.global.AbstractDAO
-import de.mwvb.blockpuzzle.global.BridgeActivity
-import de.mwvb.blockpuzzle.global.GlobalData
-import de.mwvb.blockpuzzle.global.InfoActivity
 import de.mwvb.blockpuzzle.global.messages.MessageFactory
 import de.mwvb.blockpuzzle.playingfield.Action
 import de.mwvb.blockpuzzle.playingfield.IPlayingFieldView
@@ -238,15 +234,6 @@ class MainActivity : AppCompatActivity(), IGameView {
     }
 
     override fun getSpecialAction(specialState: Int): Action {
-        if (specialState == 2) { // Death Star destroyed
-            return Action {
-                val intent = Intent(this, InfoActivity::class.java)
-                val args = Bundle()
-                args.putInt(InfoActivity.MODE, InfoActivity.BACK_FROM_DEATH_STAR)
-                intent.putExtras(args)
-                startActivity(intent)
-            }
-        }
         return Action {}
     }
 
@@ -284,13 +271,7 @@ class MainActivity : AppCompatActivity(), IGameView {
     }
 
     override fun onBackPressed() {
-        if (GlobalData.get().todesstern == 1) {
-            if (gameEngine.isDragAllowed) { // during wait time back pressing is not allowed, game state could get unstable
-                startActivity(Intent(this, BridgeActivity::class.java))
-            }
-        } else {
-            super.onBackPressed()
-        }
+        super.onBackPressed()
     }
 
     override fun shake() {

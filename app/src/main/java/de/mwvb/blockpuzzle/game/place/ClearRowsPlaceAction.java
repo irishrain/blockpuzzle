@@ -2,25 +2,20 @@ package de.mwvb.blockpuzzle.game.place;
 
 import de.mwvb.blockpuzzle.game.GameEngineInterface;
 import de.mwvb.blockpuzzle.gamestate.GameState;
-import de.mwvb.blockpuzzle.global.Features;
 import de.mwvb.blockpuzzle.playingfield.FilledRows;
 import de.mwvb.blockpuzzle.playingfield.PlayingField;
 import de.mwvb.blockpuzzle.playingfield.gravitation.GravitationAction;
 import de.mwvb.blockpuzzle.playingfield.gravitation.GravitationData;
 
 /**
- * Clear rows: add score and prepare or execute clearing of rows
+ * Clear rows: add score and clear the filled rows
  */
 public class ClearRowsPlaceAction implements IPlaceAction {
 
     @Override
     public void perform(PlaceActionModel info) {
         addScoreForClearedRows(info);
-        if (Features.shakeForGravitation) { // gravity needs phone shaking
-            prepareClearingOfRows(info);
-        } else { // auto-gravity
-            executeClearingOfRows(info);
-        }
+        clearRows(info);
     }
 
     protected void addScoreForClearedRows(PlaceActionModel info) {
@@ -53,17 +48,15 @@ public class ClearRowsPlaceAction implements IPlaceAction {
         // TO-DO Reihe mit gleicher Farbe (ohne oldOneColor) könnte weiteren Bonus auslösen.
     }
 
-    protected void prepareClearingOfRows(PlaceActionModel info) {
-        info.getGravitation().set(info.getFilledRows());
-        info.getPlayingField().clearRows(info.getFilledRows(), null);
-    }
-
-    protected void executeClearingOfRows(PlaceActionModel info) {
-        info.getGravitation().set(info.getFilledRows());
-        GravitationAction gravitationAction = new GravitationAction(info.getGravitation(), info.getGameEngineInterface(), info.getPlayingField(),
-                info.getDefinition().getGravitationStartRow());
-        info.getPlayingField().clearRows(info.getFilledRows(), gravitationAction);
-        // Action wird erst wenige Millisekunden später fertig!
+    /**
+     * Clears the full rows. Gravity is disabled: the blocks above a cleared row
+     * stay where they are instead of falling down. After the clear animation we
+     * only re-evaluate which game pieces still fit into the playing field (the
+     * step the gravitation action used to perform at its end).
+     */
+    protected void clearRows(PlaceActionModel info) {
+        GameEngineInterface engine = info.getGameEngineInterface();
+        info.getPlayingField().clearRows(info.getFilledRows(), engine::checkIfNoMoveIsPossible);
     }
 
     public void executeGravitation(GravitationData gravitation, GameEngineInterface possibleMovesChecker, PlayingField playingField, int gravitationStartRow) {
